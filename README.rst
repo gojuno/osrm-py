@@ -1,7 +1,9 @@
 osrm-py
 =======
 
-A Python client for [OSRM API](https://github.com/Project-OSRM/osrm-backend/wiki/Server-api).
+A Python client for `OSRM API`_
+
+.. _`OSRM API`: https://github.com/Project-OSRM/osrm-backend/wiki/Server-api
 
 Running the test suite
 ----------------------
