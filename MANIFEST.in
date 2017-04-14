@@ -1,0 +1,6 @@
+include MANIFEST.in
+include LICENSE
+include *.rst
+include test.py
+global-exclude __pycache__
+global-exclude *.py[co]
