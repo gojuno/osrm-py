@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name='osrm-py',
-    version='0.1',
+    version='0.2',
     author='Alexander Verbitsky',
     author_email='habibutsu@gmail.com',
     maintainer='Alexander Verbitsky',
@@ -26,10 +26,10 @@ setup(
     test_suite='test',
     extras_require={
         'aiohttp': (
-            'aiohttp==1.2.0',
+            'aiohttp>=1.2.0,<=2.1.0',
         ),
         'requests': (
-            'requests==2.12.4',
+            'requests>=2.14.0',
         ),
     },
     license='BSD',

@@ -296,7 +296,7 @@ class AioHTTPClient(BaseClient):
         attempt = 0
         while attempt < self.max_retries:
             try:
-                #  This is a workaround for the https://github.com/aio-libs/yarl/issues/45
+                #  This is a workaround for the https://github.com/aio-libs/aiohttp/issues/1901
                 response = await self.session.get(
                     "{}?{}".format(url, urlencode(params)),
                     timeout=self.timeout)
