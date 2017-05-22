@@ -51,6 +51,16 @@ class TestClient(unittest.TestCase):
         assert response['code'] == 'Ok'
         assert len(response['waypoints']) == 3
 
+        with self.assertRaises(AssertionError):
+            self.client.nearest(
+                coordinates=[[-200, 100]]
+            )
+        with self.assertRaises(AssertionError):
+            self.client.nearest(
+                coordinates=[[-74.00578245683002, 40.60600816104437]],
+                bearings=[[720,360]],
+            )
+
         with self.assertRaises(osrm.OSRMClientException) as cm:
             self.client.nearest(
                 coordinates=[[-74.00578245683002, 40.60600816104437]],

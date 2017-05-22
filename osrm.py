@@ -81,8 +81,16 @@ class BaseRequest:
     def __init__(self, coordinates, radiuses=[], bearings=[], hints=[]):
         assert _check_pairs(coordinates), \
             '''coordinates must be in format [[longitude, latitude],...]'''
+        assert all([
+            -180 <= lon <= 180 and -90 <= lat <= 90
+            for lon, lat in coordinates]), \
+            ''''longitude' should be -180..180 and 'latitude' should be -90..90 (actual: {})'''.format(coordinates)
         assert _check_pairs(bearings), \
             '''bearings must be in format [[value, range],...]'''
+        assert all([
+            0 <= bvalue <= 360 and 0 <= brange <= 180
+            for bvalue, brange in bearings]), \
+            '''bearing 'value' should be 0..360 and 'range' should be 0..180 (actual: {})'''.format(bearings)
         assert type(radiuses) is list
         assert type(bearings) is list
         assert type(hints) is list
