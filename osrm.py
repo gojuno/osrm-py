@@ -1,10 +1,10 @@
+import asyncio
+import collections
 import enum
+import json
 import logging
 import numbers
-import json
-import asyncio
 import random
-import collections
 from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
@@ -51,6 +51,7 @@ class gaps(enum.Enum):
 # alias for avoiding name collision
 osrm_gaps = gaps
 
+
 class OSRMException(Exception):
     pass
 
@@ -79,9 +80,9 @@ class BaseRequest:
 
     def __init__(self, coordinates, radiuses=[], bearings=[], hints=[]):
         assert _check_pairs(coordinates), \
-            '''coordinates must be in format [[longitude,latitude],...]'''
+            '''coordinates must be in format [[longitude, latitude],...]'''
         assert _check_pairs(bearings), \
-            '''bearings must be in format [[value,range],...]'''
+            '''bearings must be in format [[value, range],...]'''
         assert type(radiuses) is list
         assert type(bearings) is list
         assert type(hints) is list
@@ -192,7 +193,7 @@ class MatchRequest(RouteRequest):
         options['timestamps'] = self._encode_array(self.timestamps)
 
         # Don't send default values (for compatibility with 5.6)
-        if  self.gaps.value == osrm_gaps.split:
+        if self.gaps.value == osrm_gaps.split:
             options['gaps'] = self.gaps.value
         if self.tidy:
             options['tidy'] = self._encode_bool(self.tidy)
@@ -205,7 +206,7 @@ class BaseClient:
             self,
             host='http://localhost:5000',
             version='v1', profile='driving',
-            timeout=5*60, max_retries=5):
+            timeout=5 * 60, max_retries=5):
         assert type(host) is str
         assert type(version) is str
         assert type(profile) is str
