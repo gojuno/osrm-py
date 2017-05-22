@@ -35,17 +35,29 @@ class TestClient(unittest.TestCase):
 
     def test_nearest(self):
         response = self.client.nearest(
-            coordinates=[[-74.0056, 40.6197]],
-            number=10
+            coordinates=[[-74.00578245683002, 40.60600816104437]],
+            radiuses=[70],
+            number=20
         )
         assert response['code'] == 'Ok'
+        assert len(response['waypoints']) == 12
 
-        with self.assertRaises(osrm.OSRMClientException):
+        response = self.client.nearest(
+            coordinates=[[-74.00578245683002, 40.60600816104437]],
+            radiuses=[70],
+            bearings=[[45,30]],
+            number=20
+        )
+        assert response['code'] == 'Ok'
+        assert len(response['waypoints']) == 3
+
+        with self.assertRaises(osrm.OSRMClientException) as cm:
             self.client.nearest(
-                coordinates=[[-74.0056, 40.6197]],
+                coordinates=[[-74.00578245683002, 40.60600816104437]],
                 radiuses=[10],
                 number=10
             )
+        assert cm.exception.args[0]['code'] == 'NoSegment'
 
     def test_route(self):
         response = self.client.route(

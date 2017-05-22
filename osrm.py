@@ -4,6 +4,7 @@ import numbers
 import json
 import asyncio
 import random
+import collections
 from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
@@ -62,18 +63,25 @@ class OSRMClientException(OSRMException):
     pass
 
 
+def _check_pairs(items):
+    ''' checking that 'items' has format [[Number, Number], ...]'''
+    return (
+        isinstance(items, collections.Iterable) and
+        all([isinstance(p, collections.Iterable) for p in items]) and
+        all([
+            isinstance(p[0], numbers.Number) and
+            isinstance(p[1], numbers.Number) and
+            len(p) == 2
+            for p in items]))
+
+
 class BaseRequest:
 
     def __init__(self, coordinates, radiuses=[], bearings=[], hints=[]):
-        assert (
-            type(coordinates) is list and
-            all([type(p) is list for p in coordinates]) and
-            all([
-                isinstance(p[0], numbers.Number) and
-                isinstance(p[1], numbers.Number) and
-                len(p) == 2
-                for p in coordinates])), \
+        assert _check_pairs(coordinates), \
             '''coordinates must be in format [[longitude,latitude],...]'''
+        assert _check_pairs(bearings), \
+            '''bearings must be in format [[value,range],...]'''
         assert type(radiuses) is list
         assert type(bearings) is list
         assert type(hints) is list
@@ -84,13 +92,12 @@ class BaseRequest:
         self.hints = hints
 
     def get_coordinates(self):
-        return self._encode_coordinates(self.coordinates)
+        return self._encode_pairs(self.coordinates)
 
     def get_options(self):
-
         return {
             'radiuses': self._encode_array(self.radiuses),
-            'bearings': self._encode_array(self.bearings),
+            'bearings': self._encode_pairs(self.bearings),
             'hints': self._encode_array(self.hints)
         }
 
@@ -100,7 +107,7 @@ class BaseRequest:
     def _encode_bool(self, value):
         return 'true' if value else 'false'
 
-    def _encode_coordinates(self, coordinates):
+    def _encode_pairs(self, coordinates):
         return ';'.join([','.join(map(str, coord)) for coord in coordinates])
 
     def decode_response(self, url, status, response):
@@ -117,9 +124,12 @@ class NearestRequest(BaseRequest):
 
     def __init__(self, number=1, **kwargs):
         super().__init__(**kwargs)
+        self.number = number
 
-    def build(self):
-        pass
+    def get_options(self):
+        options = super().get_options()
+        options['number'] = self.number
+        return options
 
 
 class RouteRequest(BaseRequest):

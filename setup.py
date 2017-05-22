@@ -13,7 +13,7 @@ def read(fname):
 
 setup(
     name='osrm-py',
-    version='0.2',
+    version='0.3',
     author='Alexander Verbitsky',
     author_email='habibutsu@gmail.com',
     maintainer='Alexander Verbitsky',
