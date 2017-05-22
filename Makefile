@@ -34,4 +34,4 @@ test:
 	python setup.py test
 
 lint:
-	flake8 --ignore=F403,E501,E241 osrm.py
+	flake8 --ignore=F403,E501,E241,C812 osrm.py
