@@ -1,10 +1,16 @@
 import asyncio
 import collections
 import enum
-import json
 import logging
 import numbers
 import random
+
+try:
+    import ujson as json
+except ImportError:
+    import json
+
+
 from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
