@@ -97,9 +97,9 @@ class BaseRequest:
             0 <= bvalue <= 360 and 0 <= brange <= 180
             for bvalue, brange in bearings]), \
             '''bearing 'value' should be 0..360 and 'range' should be 0..180 (actual: {})'''.format(bearings)
-        assert type(radiuses) is list
-        assert type(bearings) is list
-        assert type(hints) is list
+        assert isinstance(radiuses, list)
+        assert isinstance(bearings, list)
+        assert isinstance(hints, list)
 
         self.coordinates = coordinates
         self.radiuses = radiuses
@@ -159,11 +159,11 @@ class RouteRequest(BaseRequest):
             overview=overview.simplified, **kwargs):
         super().__init__(**kwargs)
 
-        assert type(alternatives) is bool
-        assert type(steps) is bool
-        assert type(annotations) is bool
-        assert type(geometries) is osrm_geometries
-        assert type(overview) is osrm_overview
+        assert isinstance(alternatives, bool)
+        assert isinstance(steps, bool)
+        assert isinstance(annotations, bool)
+        assert isinstance(geometries, osrm_geometries)
+        assert isinstance(overview, osrm_overview)
 
         self.alternatives = alternatives
         self.steps = steps
@@ -194,9 +194,10 @@ class MatchRequest(RouteRequest):
             tidy=False,
             **kwargs):
         super().__init__(**kwargs)
-        assert type(timestamps) is list
-        assert type(gaps) is osrm_gaps
-        assert type(tidy) is bool
+        assert isinstance(timestamps, list)
+        assert isinstance(gaps, osrm_gaps)
+        assert isinstance(tidy, bool)
+
         self.timestamps = timestamps
         self.gaps = gaps
         self.tidy = tidy
@@ -221,11 +222,11 @@ class BaseClient:
             host='http://localhost:5000',
             version='v1', profile='driving',
             timeout=5 * 60, max_retries=5):
-        assert type(host) is str
-        assert type(version) is str
-        assert type(profile) is str
-        assert type(timeout) is int
-        assert type(max_retries) is int
+        assert isinstance(host, str)
+        assert isinstance(version, str)
+        assert isinstance(profile, str)
+        assert isinstance(timeout, numbers.Number)
+        assert isinstance(max_retries, int)
 
         self.host = host
         self.version = version
