@@ -221,12 +221,12 @@ class BaseClient:
             self,
             host='http://localhost:5000',
             version='v1', profile='driving',
-            timeout=5 * 60, max_retries=5):
+            timeout=5, max_retries=5):
         assert isinstance(host, str)
         assert isinstance(version, str)
         assert isinstance(profile, str)
         assert isinstance(timeout, numbers.Number)
-        assert isinstance(max_retries, int)
+        assert isinstance(max_retries, int) and max_retries >= 1
 
         self.host = host
         self.version = version
@@ -314,7 +314,7 @@ class AioHTTPClient(BaseClient):
         )
 
     def exp_backoff(self, attempt):
-        timeout = min(2 ** attempt, self.BACKOFF_MAX)
+        timeout = min(self.timeout * (2 ** attempt), self.BACKOFF_MAX)
         return timeout + random.uniform(0, self.BACKOFF_FACTOR * timeout)
 
     async def _request(self, request):
@@ -322,10 +322,13 @@ class AioHTTPClient(BaseClient):
         attempt = 0
         while attempt < self.max_retries:
             try:
-                #  This is a workaround for the https://github.com/aio-libs/aiohttp/issues/1901
-                response = await self.session.get(
-                    "{}?{}".format(url, urlencode(params)),
-                    timeout=self.timeout)
+                # This is a workaround for the https://github.com/aio-libs/aiohttp/issues/1901
+                request_url = "{}?{}".format(url, urlencode(params))
+                async with self.session.get(
+                        request_url, timeout=self.timeout) as response:
+                    body = await response.text()
+                    return request.decode_response(
+                        response.url, response.status, body)
             except asyncio.TimeoutError:
                 timeout = self.exp_backoff(attempt)
                 logger.info(
@@ -333,16 +336,8 @@ class AioHTTPClient(BaseClient):
                     url, self.max_retries - attempt, timeout)
                 await asyncio.sleep(timeout)
                 attempt += 1
-                raised_exc = OSRMServerException(url, 'server timeout')
-            else:
-                raised_exc = None
-                break
 
-        if raised_exc:
-            raise raised_exc
-
-        return request.decode_response(
-            response.url, response.status, await response.text())
+        raise OSRMServerException(url, 'server timeout')
 
     async def close(self):
         await self.session.close()

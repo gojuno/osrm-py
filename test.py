@@ -103,12 +103,14 @@ class TestAioHTTPClient(unittest.TestCase):
         async def _setUp():
             self.session = aiohttp.ClientSession(loop=self.loop)
             self.client = osrm.AioHTTPClient(
-                host=OSRM_HOST, session=self.session, timeout=1
+                host=OSRM_HOST, session=self.session, timeout=0.2
             )
 
         self.mock_session = MagicMock()
         self.mock_client = osrm.AioHTTPClient(
-            host=OSRM_HOST, session=self.mock_session)
+            host=OSRM_HOST, session=self.mock_session,
+            timeout=0.2, max_retries=3
+        )
 
         self.loop.run_until_complete(_setUp())
 
@@ -153,13 +155,15 @@ class TestAioHTTPClient(unittest.TestCase):
             if counter < 2:
                 counter += 1
                 raise asyncio.TimeoutError('timeout')
-            return asyncio.coroutine(
-                lambda: MagicMock(
-                    status=200,
-                    url=url,
-                    text=asyncio.coroutine(lambda: '{}')
-                )
-            )()
+            return aiohttp.client._RequestContextManager(
+                asyncio.coroutine(
+                    lambda: MagicMock(
+                        status=200,
+                        url=url,
+                        text=asyncio.coroutine(lambda: '{}')
+                    )
+                )()
+            )
 
         self.mock_session.get = mock_get
 
@@ -167,3 +171,32 @@ class TestAioHTTPClient(unittest.TestCase):
             coordinates=[[-74.0056, 40.6197]], number=10
         )
         assert counter == 2
+
+    @run_in_loop
+    async def test_exceeded_max_retry(self):
+        counter = 0
+        def mock_get(url, **kwargs):
+            nonlocal counter
+            counter += 1
+            raise asyncio.TimeoutError('timeout')
+
+        self.mock_session.get = mock_get
+        with self.assertRaises(osrm.OSRMServerException) as cm:
+            response = await self.mock_client.nearest(
+                coordinates=[[-74.0056, 40.6197]], number=10
+            )
+        assert cm.exception.args[1] == 'server timeout'
+        assert counter == self.mock_client.max_retries
+
+    @run_in_loop
+    async def test_real_timeout(self):
+        client = osrm.AioHTTPClient(
+            host=OSRM_HOST, timeout=0.01, max_retries=1)
+        with self.assertRaises(osrm.OSRMServerException) as cm:
+            await client.match(
+                coordinates=[[-73.999, 40.724], [-73.994, 40.728]],
+                radiuses=[150, 150]
+            )
+            await client.close()
+
+        assert cm.exception.args[1] == 'server timeout'
