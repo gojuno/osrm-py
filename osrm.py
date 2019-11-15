@@ -1,5 +1,5 @@
 import asyncio
-import collections
+import collections.abc
 import enum
 import logging
 import numbers
@@ -73,8 +73,8 @@ class OSRMClientException(OSRMException):
 def _check_pairs(items):
     ''' checking that 'items' has format [[Number, Number], ...]'''
     return (
-        isinstance(items, collections.Iterable) and
-        all([isinstance(p, collections.Iterable) for p in items]) and
+        isinstance(items, collections.abc.Iterable) and
+        all([isinstance(p, collections.abc.Iterable) for p in items]) and
         all([
             isinstance(p[0], numbers.Number) and
             isinstance(p[1], numbers.Number) and

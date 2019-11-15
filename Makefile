@@ -31,7 +31,7 @@ osrm-backend: data/new-york-latest.osrm.core
 		osrm-routed /data/new-york-latest.osrm
 
 test:
-	python setup.py test
+	python3 setup.py test
 
 lint:
 	flake8 --ignore=F403,E501,E241,C812 osrm.py
