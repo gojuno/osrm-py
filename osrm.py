@@ -208,7 +208,7 @@ class MatchRequest(RouteRequest):
         options['timestamps'] = self._encode_array(self.timestamps)
 
         # Don't send default values (for compatibility with 5.6)
-        if self.gaps.value == osrm_gaps.split:
+        if self.gaps.value != osrm_gaps.split:
             options['gaps'] = self.gaps.value
         if self.tidy:
             options['tidy'] = self._encode_bool(self.tidy)
