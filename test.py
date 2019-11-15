@@ -77,6 +77,13 @@ class TestClient(unittest.TestCase):
         )
         assert response['code'] == 'Ok'
 
+        response = self.client.route(
+            coordinates=[[-74.0056, 40.6197], [-74.0034, 40.6333]],
+            overview=osrm.overview.full,
+            continue_straight=osrm.continue_straight.true
+        )
+        assert response['code'] == 'Ok'
+
     def test_match(self):
         response = self.client.match(
             coordinates=SAMPLE_ROUTE,
