@@ -1,5 +1,5 @@
 import asyncio
-import collections
+import collections.abc
 import enum
 import logging
 import numbers
@@ -58,6 +58,16 @@ class gaps(enum.Enum):
 osrm_gaps = gaps
 
 
+class continue_straight(enum.Enum):
+    default = 'default'
+    true = 'true'
+    false = 'false'
+
+
+# alias for avoiding name collision
+osrm_continue_straight = continue_straight
+
+
 class OSRMException(Exception):
     pass
 
@@ -73,8 +83,8 @@ class OSRMClientException(OSRMException):
 def _check_pairs(items):
     ''' checking that 'items' has format [[Number, Number], ...]'''
     return (
-        isinstance(items, collections.Iterable) and
-        all([isinstance(p, collections.Iterable) for p in items]) and
+        isinstance(items, collections.abc.Iterable) and
+        all([isinstance(p, collections.abc.Iterable) for p in items]) and
         all([
             isinstance(p[0], numbers.Number) and
             isinstance(p[1], numbers.Number) and
@@ -156,7 +166,9 @@ class RouteRequest(BaseRequest):
             alternatives=False,
             steps=False, annotations=False,
             geometries=geometries.geojson,
-            overview=overview.simplified, **kwargs):
+            overview=overview.simplified,
+            continue_straight=continue_straight.default,
+            **kwargs):
         super().__init__(**kwargs)
 
         assert isinstance(alternatives, bool)
@@ -164,12 +176,14 @@ class RouteRequest(BaseRequest):
         assert isinstance(annotations, bool)
         assert isinstance(geometries, osrm_geometries)
         assert isinstance(overview, osrm_overview)
+        assert isinstance(continue_straight, osrm_continue_straight)
 
         self.alternatives = alternatives
         self.steps = steps
         self.annotations = annotations
         self.geometries = geometries
         self.overview = overview
+        self.continue_straight = continue_straight
 
     def get_options(self):
         options = super().get_options()
@@ -180,6 +194,8 @@ class RouteRequest(BaseRequest):
             'geometries':   self.geometries.value,
             'overview':     self.overview.value
         })
+        if self.continue_straight != continue_straight.default:
+            options['continue_straight'] = self.continue_straight.value
         return options
 
 
@@ -208,7 +224,7 @@ class MatchRequest(RouteRequest):
         options['timestamps'] = self._encode_array(self.timestamps)
 
         # Don't send default values (for compatibility with 5.6)
-        if self.gaps.value == osrm_gaps.split:
+        if self.gaps.value != osrm_gaps.split:
             options['gaps'] = self.gaps.value
         if self.tidy:
             options['tidy'] = self._encode_bool(self.tidy)
